@@ -10,6 +10,12 @@ EOL1=b'\n\n'
 EOL2=b'\n\r\n'
 cwd=os.getcwd()
 
+def deal200head(path):
+    head="HTTP/1.1 400 Bad Request\r\n"
+    head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
+    head+="Server:server of qiutian\r\n"
+    head+="Content-Length:"+str(os.path.getsize(cwd+path))+"\r\n"
+    return head
 def deal400():
     f=open("status/400.html","r")
     ff=f.read()
@@ -172,6 +178,15 @@ def dealresponsebak(request):
         f.close()
         return x
 
+
+def dealhtml(path):
+    head=deal200head(path)
+    head+="Content-Type: text/html\r\n\r\n"
+    f=open(cwd+path,"r")
+    ff=f.read()
+    f.close()
+    return head+ff
+
 def dealresponse(request):
     method=request.split(' ')[0]
     try:
@@ -188,8 +203,15 @@ def dealresponse(request):
             if os.path.isdir(cwd+path) and path!='/':
                 return dealdir(path)
             else:
+                if len(url.split('?'))>1 and url.split('?')[1]!='':
+                    pass
+                types=path.split('.')[-1]
                 if types == 'html':
                     return dealhtml(path)
+                elif types == 'php':
+                    pass
+                else:
+                    pass
         else:
             return deal404()
 
@@ -221,7 +243,6 @@ class Thread(threading.Thread):
                     print('-'*40 + '\n' + httprequests[filenoo])
                     httprespones[filenoo]=dealresponse(httprequests[filenoo])
                 print 'c'
-
                 try:
                     connstream[filenoo].do_handshake()
                     byteswritten = connstream[filenoo].send(httprespones[filenoo])
@@ -254,6 +275,7 @@ class Thread(threading.Thread):
                     epoll.modify(filenoo, 0)
                 except:
                     pass
+
             #SHUTDOWN:
             try:
                 connstream[fileno].shutdown(socket.SHUT_RDWR)
