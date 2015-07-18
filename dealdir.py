@@ -2,7 +2,7 @@ import os,sys,time
 cwd=sys.argv[1]
 path=sys.argv[2]
 ff=os.popen("ls"+" "+cwd+path).read()
-ff=ff.split("\n")[1:-1]
+ff=ff.split("\n")[0:-1]
 print '''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">'''
 print "<html>"
 print "<head>"

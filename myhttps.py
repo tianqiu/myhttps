@@ -8,8 +8,6 @@ import urllib
 import time
 EOL1=b'\n\n'
 EOL2=b'\n\r\n'
-header  = b'HTTP/1.x 200 OK\r\n'
-header += b'Content-Type: text/html\r\nConnection:keep-alive\r\ncharset=UTF-8\r\n\r\n'
 cwd=os.getcwd()
 
 def deal400():
@@ -22,7 +20,16 @@ def deal400():
     head+="Content-Length:"+str(os.path.getsize(cwd+"/status/400.html"))+"\r\n"
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
-
+def deal404():
+    f=open("status/404.html","r")
+    ff=f.read()
+    f.close()
+    head="HTTP/1.1 404 Not Found\r\n"
+    head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
+    head+="Server:server of qiutian\r\n"
+    head+="Content-Length:"+str(os.path.getsize(cwd+"/status/404.html"))+"\r\n"
+    head+="Content-Type: text/html\r\n\r\n"
+    return head+ff
 def deal501():
     f=open("status/501.html","r")
     ff=f.read()
@@ -180,6 +187,11 @@ def dealresponse(request):
         if os.path.exists(cwd+path):
             if os.path.isdir(cwd+path) and path!='/':
                 return dealdir(path)
+            else:
+                if types == 'html':
+                    return dealhtml(path)
+        else:
+            return deal404()
 
 
 
