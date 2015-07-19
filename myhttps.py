@@ -11,7 +11,7 @@ EOL2=b'\n\r\n'
 cwd=os.getcwd()
 
 def deal200head(path):
-    head="HTTP/1.1 400 Bad Request\r\n"
+    head="HTTP/1.1 200 OK\r\n"
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
     head+="Content-Length:"+str(os.path.getsize(cwd+path))+"\r\n"
@@ -36,6 +36,16 @@ def deal404():
     head+="Content-Length:"+str(os.path.getsize(cwd+"/status/404.html"))+"\r\n"
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
+def deal405():
+    f=open("status/405.html","r")
+    ff=f.read()
+    f.close()
+    head="HTTP/1.1 405 Method Not Allowed\r\n"
+    head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
+    head+="Server:server of qiutian\r\n"
+    head+="Content-Length:"+str(os.path.getsize(cwd+"/status/405.html"))+"\r\n"
+    head+="Content-Type: text/html\r\n\r\n"
+    return head+ff
 def deal501():
     f=open("status/501.html","r")
     ff=f.read()
@@ -47,145 +57,68 @@ def deal501():
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 
-def dealdir(path):
+def dealdir(path,method="GET"):
     ff=os.popen("python dealdir.py "+cwd+' '+path).read()
     head="HTTP/1.1 200 OK\r\n"
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
     head+="Content-Length:"+str(len(ff))+"\r\n"
     head+="Content-Type: text/html\r\n\r\n"
-    return head+ff
-
-def dealphpbak(path,url,method,request,types):
-    if method=='GET':
-        if len(url.split('?'))>1:
-            can=url.split('?')[1]
-            cann=can.split('&')
-            a=[i.split('=')[1] for i in cann]
-            b=' '
-            i=0
-            while i<len(a):
-                b=b+' '+a[i]
-                i=i+1
-        else:
-            if types=='py':
-                v=os.popen('python '+cwd+path)
-            elif types=='c':
-                os.system('gcc '+cwd+path+' -o '+cwd+path[0:-2])
-                v=os.popen(cwd+path[0:-2]).read()
-                os.system('rm '+cwd+path[0:-2]+' -f')
-            else:
-                v=os.popen(types+' '+cwd+path)
-            return v.read()
+    if method == "HEAD":
+        return head
     else:
-        po=request.split('\n\r\n')[1]
-        if po!='':
-            print "po"
-            cann=po.split('&')
-            print 'cann'
-            a=[i.split('=')[1] for i in cann]
-            print a
-            b=' '
-            i=0
-            while i<len(a):
-                b=b+' '+a[i]
-                i=i+1
-            print 'B'
-
-            print b
-            if types=='py':
-                v=os.popen('python '+cwd+path+b).read()
-            elif types=='c':
-                os.system('gcc '+cwd+path+' -o '+cwd+path[0:-2])
-                v=os.popen(cwd+path[0:-2]+b).read()
-                os.system('rm '+cwd+path[0:-2]+' -f')
-            else:
-                v=os.popen(types+' '+cwd+path+b).read()
-            v=urllib.unquote(v)
-            return
-def dealhtmlbak(path):
-    f=open(cwd+path,"rb")
-    y=f.read()
-    y=header+y
-    return
-def dealjsbak(path):
-    f=open(cwd+path,"rb")
-    y=f.read()
+        return head+ff
+def dealnone(path,method="GET"):
+    print "dead"
+    f=open(cwd+path,"r")
+    ff=f.read()
     f.close()
-    return y
-def dealresponsebak(request):
-    method=request.split(' ')[0]
-    url=request.split(' ')[1]
-    path=url.split('?')[0]
-    if method=='GET' or method=='POST':
-        if path=='/':
-            if method=='POST':
-                po=request.split('\n\r\n')[1]
-                print "po"
-                cann=po.split('&')
-                print 'cann'
-                a=[i.split('=')[1] for i in cann]
-                print a
-                b=' '
-                i=0
-                while i<len(a):
-                    b=b+' '+a[i]
-                    i=i+1
-                print b
-            f=open("index.html","rb")
-            x=header+f.read()
-            f.close()
-            return x
-        else:
-            if os.path.exists(cwd+path):
-                types=path.split('.')[-1]
-                b=' '
-                if len(url.split('?'))>1:
-                    can=url.split('?')[1]
-                    cann=can.split('&')
-                    a=[i.split('=')[1] for i in cann]
-                    i=0
-                    while i<len(a):
-                        b=b+' '+a[i]
-                        i=i+1
-                if path=='/his.txt':
-                    if a[0]!='undefined':
-                        b=urllib.unquote(b)
-                        v=os.system('python sub.py '+b)
-                    f=open("his.txt","r")
-                    v=f.read()
-                    f.close()
-                    return v
-                if types=='html':
-                    return dealhtml(path)
-                elif types=='php' or types=='py' or types=='c' or types=='sh':
-                    return dealphp(path,url,method,request,types)
-                elif (types=='js' or types=='css'):
-                    return dealjs(path)
-                else:
-                    f=open(cwd+path,"rb")
-                    x=f.read()
-                    f.close()
-                    return x
-            else:
-                f=open("index.html","rb")
-                x=header+f.read()
-                f.close()
-                return x
+    head=deal200head(path)
+    head+="Content-Type: text/none\r\n\r\n"
+    if method == "HEAD":
+        return head
     else:
-        f=open("index.html","rb")
-        x=header+f.read()
-        f.close()
-        return x
-
-
-def dealhtml(path):
+        return head+ff
+def dealhtml(path,mothod="GET"):
     head=deal200head(path)
     head+="Content-Type: text/html\r\n\r\n"
     f=open(cwd+path,"r")
     ff=f.read()
     f.close()
-    return head+ff
+    if method == "HEAD":
+        return head
+    else:
+        return head+ff
+def dealphp(path,c,method="GET"):
+    ff.popen("php "+cwd+path+" "+c).read()
+    head=deal200head()
+    head+="Content-Type: text/html\r\n\r\n"
+    if method == "HEAD":
+        return head
+    else:
+        return head+ff
+
+def dealcgi(path,types,cgican,method="GET"):
+    if types == "py":
+        ff=os.popen("python "+cwd+path+" "+cgican).read()
+    elif types == "pl" or "pm" or "perl":
+        ff=os.popen("perl "+cwd+path+" "+cgican).read()
+    elif types == "php":
+        ff=os.popen("php "+cwd+path+" "+cgican).read()
+    else:
+        try:
+            ff=os.popen("."+cwd+path+" "+cgican).read()
+        except:
+            f=open(cwd+path,"r")
+            ff=f.read()
+            f.close()
+    head=deal200head(path)
+    head+="Content-Type: text/html\r\n\r\n"
+    if method == "HEAD":
+        return head
+    else:
+        return head+ff
+
 
 def dealresponse(request):
     method=request.split(' ')[0]
@@ -196,24 +129,116 @@ def dealresponse(request):
         path=url.split('?')[0]
     except:
         return deal400()
-    if method!="GET"and"POST"and"HEAD"and"OPTIONS":
+    if method!="GET"and"POST"and"HEAD"and"OPTIONS"and"TRACE":
         return deal501()
-    if method == "GET":
+    if url == '/':
+        f=open(cwd+"/index.html")
+        ff=f.read()
+        f.close()
+        head=deal200head("/index.html")
+        head+="Content-Type: text/html\r\n\r\n"
+        return head+ff
+
+    #WHEN THR WAY IS "GET" or "HEAD":
+    if method == "GET" or "HEAD":
         if os.path.exists(cwd+path):
+            print cwd+path
+            if os.path.isdir(cwd+path) and path!='/':
+                return dealdir(path,method)
+            else:
+                c = ' '
+                cgican = ' '
+                if len(url.split('?'))>1 and url.split('?')[1]!='':
+                    can=url.split('?')[1]
+                    cgican=can.replace("&","\&")
+                    cann=can.split('&')
+                    a=[i.split('=')[1] for i in cann]
+                    i=0
+                    while i<len(a):
+                        c=c+' '+a[i]
+                        i=i+1
+
+                filename=path.split('/')[-1]
+                if len(filename.split('.'))>1:
+                    types=filename.split('.')[-1]
+                    print filename.split('.')
+                else:
+                    types="none"
+                if len(path)>9 and path[0:9] == "/cgi-bin/":
+                    return dealcgi(path,types,cgican,method)
+                elif types == "none":
+                    return dealnone(path,method)
+                elif types == 'html':
+                    return dealhtml(path,method)
+                elif types == 'php':
+                    return dealphp(path,c,method)
+                else:
+                    f=open(cwd+path,"r")
+                    ff=f.read()
+                    f.close()
+                    return ff
+        else:
+            return deal404()
+
+    #WHEN THE WAY IS "POST":
+    if method == "POST":
+        if os.path.exists(cwd+path):
+            print cwd+path
             if os.path.isdir(cwd+path) and path!='/':
                 return dealdir(path)
             else:
-                if len(url.split('?'))>1 and url.split('?')[1]!='':
-                    pass
-                types=path.split('.')[-1]
-                if types == 'html':
+                c = ' '
+                cgican = ' '
+                if len(request.split('\n\r\n'))>1 and request.split('\n\r\n')[1]!='':
+                    can=request.split('\n\r\n')[1]
+                    cgican=can.replace("&","\&")
+                    cann=can.split('&')
+                    a=[i.split('=')[1] for i in cann]
+                    i=0
+                    while i<len(a):
+                        c=c+' '+a[i]
+                        i=i+1
+
+                filename=path.split('/')[-1]
+                if len(filename.split('.'))>1:
+                    types=filename.split('.')[-1]
+                    print filename.split('.')
+                else:
+                    types="none"
+                if len(path)>9 and path[0:9] == "/cgi-bin/":
+                    return dealcgi(path,types,cgican)
+                elif types == "none":
+                    return dealnone(path)
+                elif types == 'html':
                     return dealhtml(path)
                 elif types == 'php':
-                    pass
+                    return dealphp(path,c)
                 else:
-                    pass
+                    f=open(cwd+path,"r")
+                    ff=f.read()
+                    f.close()
+                    return ff
         else:
             return deal404()
+
+    #WHEN THE WAY IS "DELETE":
+    if method == "DELETE":
+        if os.path.exists(cwd+path):
+            try:
+                if os.path.isdir(cwd+path):
+                    os.system("rm -Rf "+cwd+path)
+                else:
+                    os.system("rm -f "+cwd+path)
+            except:
+                return deal405()
+        else:
+            return deal404()
+
+    #WHEN THE WAY IS "TRACE":
+    if method == "TRACE":
+        head=deal200head()
+        head+="Content-Type: message/http"
+        return head+request
 
 
 
@@ -293,7 +318,7 @@ class Thread(threading.Thread):
 
 if __name__=="__main__":
     queue=Queue.Queue()
-    for i in range(100):
+    for i in range(3):
         t=Thread(queue)
         t.setDaemon(True)
         t.start()
