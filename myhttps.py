@@ -290,7 +290,7 @@ class Thread(threading.Thread):
                 print httprequests[filenoo]
                 if httprequests[filenoo]=='':
                     epoll.unregister(filenoo)
-                if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo] or True:
+                if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo] or:
                     print('-'*40 + '\n' + httprequests[filenoo])
                     print threading.current_thread().name
                     try:
