@@ -79,7 +79,7 @@ def dealnone(path,method="GET"):
         return head
     else:
         return head+ff
-def dealhtml(path,mothod="GET"):
+def dealhtml(path,mthod="GET"):
     head=deal200head(path)
     head+="Content-Type: text/html\r\n\r\n"
     f=open(cwd+path,"r")
@@ -266,7 +266,10 @@ class Thread(threading.Thread):
                     epoll.unregister(filenoo)
                 if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo]:
                     print('-'*40 + '\n' + httprequests[filenoo])
-                    httprespones[filenoo]=dealresponse(httprequests[filenoo])
+                    try:
+                        httprespones[filenoo]=dealresponse(httprequests[filenoo])
+                    except:
+                        httprespones[filenoo]=''
                 print 'c'
                 try:
                     connstream[filenoo].do_handshake()
@@ -290,7 +293,12 @@ class Thread(threading.Thread):
                 if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo] or True:
                     print('-'*40 + '\n' + httprequests[filenoo])
                     print threading.current_thread().name
-                    httprespones[filenoo]=dealresponse(httprequests[filenoo])
+                    try:
+                        httprespones[filenoo]=dealresponse(httprequests[filenoo])
+                    except:
+                        httprespones[filenoo]=''
+                if httprequests[filenoo]=='':
+                    epoll.unregister(filenoo)
                 try:
                     byteswritten = connections[filenoo].send(httprespones[filenoo])
                     httprespones[filenoo] = httprespones[filenoo][byteswritten:]
@@ -318,7 +326,7 @@ class Thread(threading.Thread):
 
 if __name__=="__main__":
     queue=Queue.Queue()
-    for i in range(3):
+    for i in range(1):
         t=Thread(queue)
         t.setDaemon(True)
         t.start()
@@ -361,16 +369,23 @@ if __name__=="__main__":
                     else:
                         connection,address=serversockets.accept()
                         epoll.register(connection.fileno(),select.EPOLLIN)
-                        connstream[connection.fileno()] = context.wrap_socket(connection, server_side=True,do_handshake_on_connect=True)
-                        linkway[connection.fileno()]="https"
-                        connections[connection.fileno()] = connection
-                        httprequests[connection.fileno()] = b''
-                        httprequests[connection.fileno()] = b''
+                        try:
+                            connstream[connection.fileno()] = context.wrap_socket(connection, server_side=True,do_handshake_on_connect=True)
+                            linkway[connection.fileno()]="https"
+                            connections[connection.fileno()] = connection
+                            httprequests[connection.fileno()] = b''
+                            httprequests[connection.fileno()] = b''
+                        except:
+                            epoll.modify(connection.fileno(),0)
+                            epoll.unregister(connection.fileno())
+                            connection.shutdown(socket.SHUT_RDWR)
+                            connection.close()
                 elif event & select.EPOLLIN:
+                    print 'b'
                     epoll.modify(fileno,select.EPOLLOUT)
                     queue.put(fileno)
                 elif event & select.EPOLLHUP:
-                    #print 'd'
+                    print 'd'
                     epoll.unregister(fileno)
                     try:
                         connstream[fileno].close()
