@@ -79,7 +79,7 @@ def dealnone(path,method="GET"):
         return head
     else:
         return head+ff
-def dealhtml(path,mthod="GET"):
+def dealhtml(path,method="GET"):
     head=deal200head(path)
     head+="Content-Type: text/html\r\n\r\n"
     f=open(cwd+path,"r")
@@ -290,7 +290,7 @@ class Thread(threading.Thread):
                 print httprequests[filenoo]
                 if httprequests[filenoo]=='':
                     epoll.unregister(filenoo)
-                if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo] or:
+                if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo]:
                     print('-'*40 + '\n' + httprequests[filenoo])
                     print threading.current_thread().name
                     try:
