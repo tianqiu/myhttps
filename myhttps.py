@@ -6,9 +6,11 @@ import socket
 import select
 import urllib
 import time
+import logging
 EOL1=b'\n\n'
 EOL2=b'\n\r\n'
 cwd=os.getcwd()
+logging.basicConfig(filename = os.path.join(os.getcwd(), 'log.txt'), level = logging.ERROR)
 
 def deal200head(path):
     head="HTTP/1.1 200 OK\r\n"
@@ -97,7 +99,6 @@ def dealphp(path,c,method="GET"):
         return head
     else:
         return head+ff
-
 def dealcgi(path,types,cgican,method="GET"):
     if types == "py":
         ff=os.popen("python "+cwd+path+" "+cgican).read()
@@ -108,7 +109,8 @@ def dealcgi(path,types,cgican,method="GET"):
     else:
         try:
             ff=os.popen("."+cwd+path+" "+cgican).read()
-        except:
+        except Exception,e:
+            logging.error(e)
             f=open(cwd+path,"r")
             ff=f.read()
             f.close()
@@ -119,7 +121,6 @@ def dealcgi(path,types,cgican,method="GET"):
     else:
         return head+ff
 
-
 def dealresponse(request):
     method=request.split(' ')[0]
     try:
@@ -127,7 +128,8 @@ def dealresponse(request):
         if url[0]!='/' or url[0:3]=="/..":
             return deal400()
         path=url.split('?')[0]
-    except:
+    except Exception,e:
+        logging.error(e)
         return deal400()
     if method!="GET"and"POST"and"HEAD"and"OPTIONS"and"TRACE":
         return deal501()
@@ -229,7 +231,8 @@ def dealresponse(request):
                     os.system("rm -Rf "+cwd+path)
                 else:
                     os.system("rm -f "+cwd+path)
-            except:
+            except Exception,e:
+                logging.error(e)
                 return deal405()
         else:
             return deal404()
@@ -239,8 +242,6 @@ def dealresponse(request):
         head=deal200head()
         head+="Content-Type: message/http"
         return head+request
-
-
 
 
 
@@ -258,17 +259,18 @@ class Thread(threading.Thread):
                     #print filenoo
                     connstream[filenoo].do_handshake()
                     httprequests[filenoo] = connstream[filenoo].recv(1024)
-                except ssl.SSLWantReadError:
-                    print 'wantread'
-                except:
-                    pass
+                except ssl.SSLWantReadError ,e:
+                    logging.error(e)
+                except Exception,e:
+                    logging.error(e)
                 if httprequests[filenoo]=='':
                     epoll.unregister(filenoo)
                 if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo]:
                     print('-'*40 + '\n' + httprequests[filenoo])
                     try:
                         httprespones[filenoo]=dealresponse(httprequests[filenoo])
-                    except:
+                    except Exception,e:
+                        logging.error(e)
                         httprespones[filenoo]=''
                 print 'c'
                 try:
@@ -276,17 +278,17 @@ class Thread(threading.Thread):
                     byteswritten = connstream[filenoo].send(httprespones[filenoo])
                     httprespones[filenoo] = httprespones[filenoo][byteswritten:]
                     epoll.modify(filenoo, 0)
-                except ssl.SSLWantWriteError:
-                    print ("wanterror")
-                except:
-                    pass
+                except ssl.SSLWantWriteError,e:
+                    logging.error(e)
+                except Exception,e:
+                    logging.error(e)
 
             ##WHEN THE WAY IS HTTP:
             elif linkway[filenoo] == "http":
                 try:
                     httprequests[filenoo] = connections[filenoo].recv(1024)
-                except:
-                    pass
+                except Exception,e:
+                    logging.error(e)
                 print httprequests[filenoo]
                 if httprequests[filenoo]=='':
                     epoll.unregister(filenoo)
@@ -295,31 +297,31 @@ class Thread(threading.Thread):
                     print threading.current_thread().name
                     try:
                         httprespones[filenoo]=dealresponse(httprequests[filenoo])
-                    except:
+                    except Exception,e:
+                        logging.error(e)
                         httprespones[filenoo]=''
                 if httprequests[filenoo]=='':
                     epoll.unregister(filenoo)
                 try:
                     byteswritten = connections[filenoo].send(httprespones[filenoo])
                     httprespones[filenoo] = httprespones[filenoo][byteswritten:]
-                except:
-                    pass
+                except Exception,e:
+                    logging.error(e)
                 try:
                     epoll.modify(filenoo, 0)
-                except:
-                    pass
+                except Exception,e:
+                    logging.error(e)
 
             #SHUTDOWN:
             try:
                 connstream[fileno].shutdown(socket.SHUT_RDWR)
-            except:
-                pass
+            except Exception,e:
+                logging.error(e)
             try:
                 connections[fileno].shutdown(socket.SHUT_RDWR)
-            except:
-                pass
+            except Exception,e:
+                logging.error(e)
             self._queue.task_done()
-
 
 
 
@@ -375,7 +377,8 @@ if __name__=="__main__":
                             connections[connection.fileno()] = connection
                             httprequests[connection.fileno()] = b''
                             httprequests[connection.fileno()] = b''
-                        except:
+                        except Exception,e:
+                            logging.error(e)
                             epoll.modify(connection.fileno(),0)
                             epoll.unregister(connection.fileno())
                             connection.shutdown(socket.SHUT_RDWR)
@@ -389,14 +392,14 @@ if __name__=="__main__":
                     epoll.unregister(fileno)
                     try:
                         connstream[fileno].close()
-                    except:
-                        pass
+                    except Exception,e:
+                        logging.error(e)
                     connections[fileno].close()
                     del connections[fileno]
                     try:
                         del connstream[fileno]
-                    except:
-                        pass
+                    except Exception,e:
+                        logging.error(e)
                     del linkway[fileno]
     finally:
         print 'e'

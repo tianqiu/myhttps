@@ -1,0 +1,20 @@
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:global name 'method' is not defined
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:global name 'method' is not defined
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
