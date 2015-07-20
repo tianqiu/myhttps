@@ -35,3 +35,12 @@ ERROR:root:7
 ERROR:root:7
 ERROR:root:'NoneType' object has no attribute 'do_handshake'
 ERROR:root:'NoneType' object has no attribute 'do_handshake'
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7

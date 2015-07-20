@@ -253,6 +253,7 @@ class Thread(threading.Thread):
     def run(self):
         while True:
             filenoo=self._queue.get()
+
             ##WHEN THE WAY IS HTTPS:
             if linkway[filenoo] == "https":
                 try:
