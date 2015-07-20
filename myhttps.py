@@ -372,7 +372,7 @@ if __name__=="__main__":
                         connection,address=serversockets.accept()
                         epoll.register(connection.fileno(),select.EPOLLIN)
                         try:
-                            connstream[connection.fileno()] = context.wrap_socket(connection, server_side=True,do_handshake_on_connect=True)
+                            connstream[connection.fileno()] = context.wrap_socket(connection, server_side=True)
                             linkway[connection.fileno()]="https"
                             connections[connection.fileno()] = connection
                             httprequests[connection.fileno()] = b''
