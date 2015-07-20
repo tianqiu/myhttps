@@ -341,7 +341,7 @@ if __name__=="__main__":
     serversockets.setblocking(0)
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    serversocket.bind(('127.0.0.1', 883))
+    serversocket.bind(('127.0.0.1', 80))
     serversocket.listen(100)
     serversocket.setblocking(0)
     epoll = select.epoll()
