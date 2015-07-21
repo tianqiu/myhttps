@@ -251,6 +251,7 @@ class Thread(threading.Thread):
     def run(self):
         while True:
             filenoo,eventt=self._queue.get()
+
             ##WHEN THE WAY IS HTTPS:
             if linkway[filenoo] == "https":
                 if eventt & select.EPOLLMSG:
@@ -395,7 +396,6 @@ if __name__=="__main__":
         while True:
             events=epoll.poll(100)
             for fileno,event in events:
-                #print events
                 if event & select.EPOLLPRI:
                     pass
                 elif event & select.EPOLLMSG:
