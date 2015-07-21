@@ -162,7 +162,6 @@ def dealresponse(request):
                 filename=path.split('/')[-1]
                 if len(filename.split('.'))>1:
                     types=filename.split('.')[-1]
-                    print filename.split('.')
                 else:
                     types="none"
                 if len(path)>9 and path[0:9] == "/cgi-bin/":
@@ -251,6 +250,7 @@ class Thread(threading.Thread):
     def run(self):
         while True:
             filenoo,eventt=self._queue.get()
+
             ##WHEN THE WAY IS HTTPS:
             if linkway[filenoo] == "https":
                 if eventt & select.EPOLLMSG:
@@ -261,7 +261,8 @@ class Thread(threading.Thread):
                             connstream[filenoo].do_handshake()
                             connections[filenoo].setblocking(0)
                             connstream[filenoo].setblocking(0)
-                            httprequests[filenoo] = connstream[filenoo].recv(1024)
+                            aa=connstream[filenoo].recv(1024)
+                            httprequests[filenoo] += aa
                             break
                         except ssl.SSLWantReadError,e:
                             logging.error(e)
@@ -269,10 +270,8 @@ class Thread(threading.Thread):
                             connections[filenoo].setblocking(0)
                             connstream[filenoo].setblocking(0)
                             logging.error(e)
-                    if httprequests[filenoo]=='':
-                        epoll.unregister(filenoo)
                     if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo]:
-                        print('-'*40 + '\n' + httprequests[filenoo])
+                        #print('-'*40 + '\n' + httprequests[filenoo])
                         try:
                             httprespones[filenoo]=dealresponse(httprequests[filenoo])
                             epoll.modify(filenoo,select.EPOLLOUT)
@@ -280,15 +279,16 @@ class Thread(threading.Thread):
                             logging.error(e)
                             httprespones[filenoo]=''
                     else:
-                        if httprequests[filenoo]=='':
+                        if httprequests[filenoo]=='' or aa == '' or EOL1 in aa or EOL2 in aa:
                             try:
                                 epoll.modify(filenoo,0)
                             except:
                                 pass
-                        try:
-                            epoll.modify(filenoo,select.EPOLLIN)
-                        except:
-                            pass
+                        else:
+                            try:
+                                epoll.modify(filenoo,select.EPOLLIN)
+                            except:
+                                pass
                     print 'c'
                 elif eventt & select.EPOLLPRI:
                     while True:
@@ -312,8 +312,8 @@ class Thread(threading.Thread):
                             logging.error(e)
                     if len(httprespones[filenoo]) == 0:
                         epoll.modify(filenoo,0)
-                        connstream[filenoo].shutdown(socket.SHUT_RDWR)
                         try:
+                            connstream[filenoo].shutdown(socket.SHUT_RDWR)
                             connections[filenoo].shutdown(socket.SHUT_RDWR)
                         except Exception,e:
                             logging.error(e)
@@ -326,9 +326,10 @@ class Thread(threading.Thread):
             ##WHEN THE WAY IS HTTP:
             elif linkway[filenoo] == "http":
                 if eventt & select.EPOLLMSG:
-                    httprequests[filenoo] += connections[filenoo].recv(1024)
+                    aa=connections[filenoo].recv(1024)
+                    httprequests[filenoo] += aa
                     if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo]:
-                        print('-'*40 + '\n' + httprequests[filenoo])
+                        #print('-'*40 + '\n' + httprequests[filenoo])
                         try:
                             httprespones[filenoo]=dealresponse(httprequests[filenoo])
                             epoll.modify(filenoo,select.EPOLLOUT)
@@ -336,23 +337,27 @@ class Thread(threading.Thread):
                             logging.error(e)
                             httprespones[filenoo]=''
                     else:
-                        if httprequests[filenoo]=='':
+                        if httprequests[filenoo]=='' or aa == '' or EOL1 in aa or EOL2 in aa:
+                            epoll.modify(filenoo,0)
+                        else:
                             try:
-                                epoll(filenoo,0)
+                                epoll.modify(filenoo,select.EPOLLIN)
                             except:
                                 pass
-                        try:
-                            epoll.modify(filenoo,select.EPOLLIN)
-                        except:
-                            pass
 
                 elif eventt & select.EPOLLPRI:
-                    print 'o'
+                    #print 'o'
                     byteswritten[filenoo] = connections[filenoo].send(httprespones[filenoo])
                     httprespones[filenoo] = httprespones[filenoo][byteswritten[filenoo]:]
                     if len(httprespones[filenoo]) == 0:
-                        epoll.modify(filenoo, 0)
-                        connections[filenoo].shutdown(socket.SHUT_RDWR)
+                        try:
+                            epoll.modify(filenoo, 0)
+                        except:
+                            pass
+                        try:
+                            connections[filenoo].shutdown(socket.SHUT_RDWR)
+                        except:
+                            pass
                     else:
                         try:
                             epoll.modify(filenoo,select.EPOLLOUT)
@@ -370,6 +375,8 @@ if __name__=="__main__":
         t=Thread(queue)
         t.setDaemon(True)
         t.start()
+    print "thread finished"
+    startt=time.time()
     context=ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
     serversockets = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -393,15 +400,14 @@ if __name__=="__main__":
         linkway={}
         byteswritten={}
         while True:
-            events=epoll.poll(100)
+            events=epoll.poll(1)
             for fileno,event in events:
-                #print events
                 if event & select.EPOLLPRI:
                     pass
                 elif event & select.EPOLLMSG:
                     pass
                 elif fileno == serversockets.fileno() or fileno == serversocket.fileno():
-                    print 'a'
+                    #print 'a'
                     if fileno == serversocket.fileno():
                         connection,address=serversocket.accept()
                         connection.setblocking(0)
@@ -428,15 +434,15 @@ if __name__=="__main__":
                             connection.shutdown(socket.SHUT_RDWR)
                             connection.close()
                 elif event & select.EPOLLIN:
-                    print 'b'
+                    #print 'b'
                     epoll.modify(fileno,select.EPOLLMSG)
                     queue.put((fileno,select.EPOLLMSG))
                 elif event & select.EPOLLOUT:
-                    print 'c'
+                    #print 'c'
                     epoll.modify(fileno,select.EPOLLPRI)
                     queue.put((fileno,select.EPOLLPRI))
                 elif event & select.EPOLLHUP:
-                    print 'd'
+                    #print 'd'
                     epoll.unregister(fileno)
                     try:
                         connstream[fileno].close()
