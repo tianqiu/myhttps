@@ -256,20 +256,26 @@ class Thread(threading.Thread):
                 if eventt & select.EPOLLMSG:
                     while True:
                         try:
-                            connections[filenoo].setblocking(1)
-                            connstream[filenoo].setblocking(1)
-                            connstream[filenoo].do_handshake()
+                            try:
+                                connections[filenoo].setblocking(1)
+                                connstream[filenoo].setblocking(1)
+                                print 'do11'
+                                connstream[filenoo].do_handshake()
+                                print 'do'
+                            except Exception,e:
+                                logging.error(e)
                             connections[filenoo].setblocking(0)
                             connstream[filenoo].setblocking(0)
                             aa=connstream[filenoo].recv(1024)
                             httprequests[filenoo] += aa
                             break
                         except ssl.SSLWantReadError,e:
+                            print "wantread"
                             logging.error(e)
-                        except:
-                            connections[filenoo].setblocking(0)
-                            connstream[filenoo].setblocking(0)
+                        except Exception,e:
+                            print "readelse"
                             logging.error(e)
+                            break
                     if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo]:
                         #print('-'*40 + '\n' + httprequests[filenoo])
                         try:
@@ -289,7 +295,7 @@ class Thread(threading.Thread):
                                 epoll.modify(filenoo,select.EPOLLIN)
                             except:
                                 pass
-                    print 'c'
+                    #print 'c'
                 elif eventt & select.EPOLLPRI:
                     while True:
                         try:
@@ -302,8 +308,10 @@ class Thread(threading.Thread):
                             httprespones[filenoo] = httprespones[filenoo][byteswritten[filenoo]:]
                             break
                         except ssl.SSLWantWriteError,e:
+                            print "wantwrite"
                             logging.error(e)
                         except Exception,e:
+                            print "writeelse"
                             try:
                                 connections[filenoo].setblocking(0)
                                 connstream[filenoo].setblocking(0)
@@ -311,7 +319,10 @@ class Thread(threading.Thread):
                                 logging.error(e)
                             logging.error(e)
                     if len(httprespones[filenoo]) == 0:
-                        epoll.modify(filenoo,0)
+                        try:
+                            epoll.modify(filenoo,0)
+                        except:
+                            pass
                         try:
                             connstream[filenoo].shutdown(socket.SHUT_RDWR)
                             connections[filenoo].shutdown(socket.SHUT_RDWR)
