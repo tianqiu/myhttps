@@ -24,6 +24,9 @@ def readconf():
     Xconf=conf.split("X{")[-1]
     Xconf=Xconf.split("}")[0]
     Xconf=Xconf.split("\n")[1:-1]
+    Sconf=conf.split("S{")[-1]
+    Sconf=Sconf.split("}")[0]
+    Sconf=Sconf.split("\n")[1:-1]
 
     #R
     for i in Rconf:
@@ -68,6 +71,12 @@ def readconf():
             type=file.split(".")[-1]
             if type in types:
                 os.system("chmod u+x "+cwd+path+"/"+file)
+    for i in Sconf:
+        path=i.split(":")[0]
+        num=i.split(":")[1]
+        print num
+        os.system("chmod "+num+" "+cwd+path)
+
 
 def deal200head(path):
     head="HTTP/1.1 200 OK\r\n"
