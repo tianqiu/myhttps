@@ -9,73 +9,88 @@ import time
 import logging
 EOL1=b'\n\n'
 EOL2=b'\n\r\n'
-cwd=os.getcwd()
+cwd="/myhttps/www"
 logging.basicConfig(filename = os.path.join(os.getcwd(), 'log.txt'), level = logging.ERROR)
 def readconf():
-    f=open("myhttps.conf","r")
-    conf=f.read()
-    f.close()
-    Rconf=conf.split("R{")[-1]
-    Rconf=Rconf.split("}")[0]
-    Rconf=Rconf.split("\n")[1:-1]
-    Wconf=conf.split("W{")[-1]
-    Wconf=Wconf.split("}")[0]
-    Wconf=Wconf.split("\n")[1:-1]
-    Xconf=conf.split("X{")[-1]
-    Xconf=Xconf.split("}")[0]
-    Xconf=Xconf.split("\n")[1:-1]
-    Sconf=conf.split("S{")[-1]
-    Sconf=Sconf.split("}")[0]
-    Sconf=Sconf.split("\n")[1:-1]
+    try:
+        f=open("myhttps.conf","r")
+        conf=f.read()
+        f.close()
+        Rconf=conf.split("R{")[-1]
+        Rconf=Rconf.split("}")[0]
+        Rconf=Rconf.split("\n")[1:-1]
+        Wconf=conf.split("W{")[-1]
+        Wconf=Wconf.split("}")[0]
+        Wconf=Wconf.split("\n")[1:-1]
+        Xconf=conf.split("X{")[-1]
+        Xconf=Xconf.split("}")[0]
+        Xconf=Xconf.split("\n")[1:-1]
+        Sconf=conf.split("S{")[-1]
+        Sconf=Sconf.split("}")[0]
+        Sconf=Sconf.split("\n")[1:-1]
+    except:
+        return
 
     #R
     for i in Rconf:
-        path=i.split(":")[0]
-        types=i.split(":")[1]
-        types=types.split(" ")
-        files=os.popen("ls "+cwd+path).read()
-        files=files.split("\n")[0:-1]
-        files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
-        for file in files:
-            try:
-                os.system("chmod 000 "+cwd+path+"/"+file)
-            except:
-                pass
-        for file in files:
-            type=file.split(".")[-1]
-            if type in types:
-                os.system("chmod u+r "+cwd+path+"/"+file)
-
+        try:
+            path=i.split(":")[0]
+            types=i.split(":")[1]
+            types=types.split(" ")
+            files=os.popen("ls "+cwd+path).read()
+            files=files.split("\n")[0:-1]
+            files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
+            for file in files:
+                try:
+                    os.system("chmod 000 "+cwd+path+"/"+file)
+                except:
+                    pass
+            for file in files:
+                type=file.split(".")[-1]
+                if type in types:
+                    os.system("chmod u+r "+cwd+path+"/"+file)
+        except:
+            pass
     #W
     for i in Wconf:
-        path=i.split(":")[0]
-        types=i.split(":")[1]
-        types=types.split(" ")
-        files=os.popen("ls "+cwd+path).read()
-        files=files.split("\n")[0:-1]
-        files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
-        for file in files:
-            type=file.split(".")[-1]
-            if type in types:
-                os.system("chmod u+w "+cwd+path+"/"+file)
+        try:
+            path=i.split(":")[0]
+            types=i.split(":")[1]
+            types=types.split(" ")
+            files=os.popen("ls "+cwd+path).read()
+            files=files.split("\n")[0:-1]
+            files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
+            for file in files:
+                type=file.split(".")[-1]
+                if type in types:
+                    os.system("chmod u+w "+cwd+path+"/"+file)
+        except:
+            pass
 
     #X
     for i in Xconf:
-        path=i.split(":")[0]
-        types=i.split(":")[1]
-        types=types.split(" ")
-        files=os.popen("ls "+cwd+path).read()
-        files=files.split("\n")[0:-1]
-        files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
-        for file in files:
-            type=file.split(".")[-1]
-            if type in types:
-                os.system("chmod u+x "+cwd+path+"/"+file)
+        try:
+            path=i.split(":")[0]
+            types=i.split(":")[1]
+            types=types.split(" ")
+            files=os.popen("ls "+cwd+path).read()
+            files=files.split("\n")[0:-1]
+            files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
+            for file in files:
+                type=file.split(".")[-1]
+                if type in types:
+                    os.system("chmod u+x "+cwd+path+"/"+file)
+        except:
+            pass
+
+    #S
     for i in Sconf:
-        path=i.split(":")[0]
-        num=i.split(":")[1]
-        print num
-        os.system("chmod "+num+" "+cwd+path)
+        try:
+            path=i.split(":")[0]
+            num=i.split(":")[1]
+            os.system("chmod "+num+" "+cwd+path)
+        except:
+            pass
 
 
 def deal200head(path):
@@ -85,7 +100,13 @@ def deal200head(path):
     head+="Content-Length:"+str(os.path.getsize(cwd+path))+"\r\n"
     return head
 def deal400():
-    f=open("status/400.html","r")
+    try:
+        f=open(cwd+"/status/400.html","r")
+    except:
+        if os.path.exists(cwd+"/status/400.html"):
+            return deal403()
+        else:
+            return deal404()
     ff=f.read()
     f.close()
     head="HTTP/1.1 400 Bad Request\r\n"
@@ -95,7 +116,13 @@ def deal400():
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 def deal404():
-    f=open("status/404.html","r")
+    try:
+        f=open(cwd+"/status/404.html","r")
+    except:
+        if os.path.exists(cwd+"/status/404.html"):
+            return deal403()
+        else:
+            return deal404()
     ff=f.read()
     f.close()
     head="HTTP/1.1 404 Not Found\r\n"
@@ -105,7 +132,13 @@ def deal404():
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 def deal403():
-    f=open("status/403.html","r")
+    try:
+        f=open(cwd+"/status/403.html","r")
+    except:
+        if os.path.exists(cwd+"/status/403.html"):
+            return deal403()
+        else:
+            return deal404()
     ff=f.read()
     f.close()
     head="HTTP/1.1 403 Forbidden\r\n"
@@ -115,7 +148,13 @@ def deal403():
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 def deal405():
-    f=open("status/405.html","r")
+    try:
+        f=open(cwd+"/status/405.html","r")
+    except:
+        if os.path.exists(cwd+"/status/405.html"):
+            return deal403()
+        else:
+            return deal404()
     ff=f.read()
     f.close()
     head="HTTP/1.1 405 Method Not Allowed\r\n"
@@ -125,7 +164,13 @@ def deal405():
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 def deal501():
-    f=open("status/501.html","r")
+    try:
+        f=open(cwd+"/status/501.html","r")
+    except:
+        if os.path.exists(cwd+"/status/501.html"):
+            return deal403()
+        else:
+            return deal404()
     ff=f.read()
     f.close()
     head="HTTP/1.1 501 Not Implemented\r\n"
@@ -136,7 +181,7 @@ def deal501():
     return head+ff
 
 def dealdir(path,method="GET"):
-    ff=os.popen("python dealdir.py "+cwd+' '+path).read()
+    ff=os.popen("python "+cwd+"/dealdir.py "+cwd+' '+path).read()
     head="HTTP/1.1 200 OK\r\n"
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
@@ -148,7 +193,10 @@ def dealdir(path,method="GET"):
         return head+ff
 def dealnone(path,method="GET"):
     print "dead"
-    f=open(cwd+path,"r")
+    try:
+        f=open(cwd+path,"r")
+    except:
+        return deal403()
     ff=f.read()
     f.close()
     head=deal200head(path)
@@ -160,7 +208,10 @@ def dealnone(path,method="GET"):
 def dealhtml(path,method="GET"):
     head=deal200head(path)
     head+="Content-Type: text/html\r\n\r\n"
-    f=open(cwd+path,"r")
+    try:
+        f=open(cwd+path,"r")
+    except:
+        return deal403()
     ff=f.read()
     f.close()
     if method == "HEAD":
@@ -168,7 +219,10 @@ def dealhtml(path,method="GET"):
     else:
         return head+ff
 def dealphp(path,c,method="GET"):
-    ff.popen("php "+cwd+path+" "+c).read()
+    try:
+        ff.popen("php "+cwd+path+" "+c).read()
+    except:
+        return deal403()
     head=deal200head()
     head+="Content-Type: text/html\r\n\r\n"
     if method == "HEAD":
@@ -177,11 +231,20 @@ def dealphp(path,c,method="GET"):
         return head+ff
 def dealcgi(path,types,cgican,method="GET"):
     if types == "py":
-        ff=os.popen("python "+cwd+path+" "+cgican).read()
+        try:
+            ff=os.popen("python "+cwd+path+" "+cgican).read()
+        except:
+            return deal403()
     elif types == "pl" or "pm" or "perl":
-        ff=os.popen("perl "+cwd+path+" "+cgican).read()
+        try:
+            ff=os.popen("perl "+cwd+path+" "+cgican).read()
+        except:
+            return deal403()
     elif types == "php":
-        ff=os.popen("php "+cwd+path+" "+cgican).read()
+        try:
+            ff=os.popen("php "+cwd+path+" "+cgican).read()
+        except:
+            return deal403()
     else:
         try:
             ff=os.popen("."+cwd+path+" "+cgican).read()
@@ -210,7 +273,10 @@ def dealresponse(request):
     if method!="GET"and"POST"and"HEAD"and"OPTIONS"and"TRACE":
         return deal501()
     if url == '/':
-        f=open(cwd+"/index.html")
+        try:
+            f=open(cwd+"/index.html")
+        except:
+            return deal403()
         ff=f.read()
         f.close()
         head=deal200head("/index.html")
@@ -249,7 +315,10 @@ def dealresponse(request):
                 elif types == 'php':
                     return dealphp(path,c,method)
                 else:
-                    f=open(cwd+path,"r")
+                    try:
+                        f=open(cwd+path,"r")
+                    except:
+                        return deal403()
                     ff=f.read()
                     f.close()
                     return ff
@@ -289,7 +358,10 @@ def dealresponse(request):
                 elif types == 'php':
                     return dealphp(path,c)
                 else:
-                    f=open(cwd+path,"r")
+                    try:
+                        f=open(cwd+path,"r")
+                    except:
+                        return deal403()
                     ff=f.read()
                     f.close()
                     return ff
@@ -475,7 +547,7 @@ if __name__=="__main__":
     print "thread finished"
     startt=time.time()
     context=ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-    context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
+    context.load_cert_chain(certfile='/myhttps/cert.pem', keyfile='/myhttps/key.pem')
     serversockets = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversockets.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     serversockets.bind(('127.0.0.1', 4433))
