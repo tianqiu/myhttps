@@ -11,6 +11,63 @@ EOL1=b'\n\n'
 EOL2=b'\n\r\n'
 cwd=os.getcwd()
 logging.basicConfig(filename = os.path.join(os.getcwd(), 'log.txt'), level = logging.ERROR)
+def readconf():
+    f=open("myhttps.conf","r")
+    conf=f.read()
+    f.close()
+    Rconf=conf.split("R{")[-1]
+    Rconf=Rconf.split("}")[0]
+    Rconf=Rconf.split("\n")[1:-1]
+    Wconf=conf.split("W{")[-1]
+    Wconf=Wconf.split("}")[0]
+    Wconf=Wconf.split("\n")[1:-1]
+    Xconf=conf.split("X{")[-1]
+    Xconf=Xconf.split("}")[0]
+    Xconf=Xconf.split("\n")[1:-1]
+
+    #R
+    for i in Rconf:
+        path=i.split(":")[0]
+        types=i.split(":")[1]
+        types=types.split(" ")
+        files=os.popen("ls "+cwd+path).read()
+        files=files.split("\n")[0:-1]
+        files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
+        for file in files:
+            try:
+                os.system("chmod 000 "+cwd+path+"/"+file)
+            except:
+                pass
+        for file in files:
+            type=file.split(".")[-1]
+            if type in types:
+                os.system("chmod u+r "+cwd+path+"/"+file)
+
+    #W
+    for i in Wconf:
+        path=i.split(":")[0]
+        types=i.split(":")[1]
+        types=types.split(" ")
+        files=os.popen("ls "+cwd+path).read()
+        files=files.split("\n")[0:-1]
+        files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
+        for file in files:
+            type=file.split(".")[-1]
+            if type in types:
+                os.system("chmod u+w "+cwd+path+"/"+file)
+
+    #X
+    for i in Xconf:
+        path=i.split(":")[0]
+        types=i.split(":")[1]
+        types=types.split(" ")
+        files=os.popen("ls "+cwd+path).read()
+        files=files.split("\n")[0:-1]
+        files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
+        for file in files:
+            type=file.split(".")[-1]
+            if type in types:
+                os.system("chmod u+x "+cwd+path+"/"+file)
 
 def deal200head(path):
     head="HTTP/1.1 200 OK\r\n"
@@ -36,6 +93,16 @@ def deal404():
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
     head+="Content-Length:"+str(os.path.getsize(cwd+"/status/404.html"))+"\r\n"
+    head+="Content-Type: text/html\r\n\r\n"
+    return head+ff
+def deal403():
+    f=open("status/403.html","r")
+    ff=f.read()
+    f.close()
+    head="HTTP/1.1 403 Forbidden\r\n"
+    head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
+    head+="Server:server of qiutian\r\n"
+    head+="Content-Length:"+str(os.path.getsize(cwd+"/status/403.html"))+"\r\n"
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 def deal405():
@@ -252,16 +319,16 @@ class Thread(threading.Thread):
             filenoo,eventt=self._queue.get()
 
             ##WHEN THE WAY IS HTTPS:
-            if linkway[filenoo] == "https":
+            if linkway[filenoo] == "https" or False:
                 if eventt & select.EPOLLMSG:
                     while True:
                         try:
                             try:
                                 connections[filenoo].setblocking(1)
                                 connstream[filenoo].setblocking(1)
-                                print 'do11'
+                               # print 'do11'
                                 connstream[filenoo].do_handshake()
-                                print 'do'
+                                #print 'do'
                             except Exception,e:
                                 logging.error(e)
                             connections[filenoo].setblocking(0)
@@ -270,10 +337,10 @@ class Thread(threading.Thread):
                             httprequests[filenoo] += aa
                             break
                         except ssl.SSLWantReadError,e:
-                            print "wantread"
+                            #print "wantread"
                             logging.error(e)
                         except Exception,e:
-                            print "readelse"
+                            #print "readelse"
                             logging.error(e)
                             break
                     if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo]:
@@ -295,7 +362,7 @@ class Thread(threading.Thread):
                                 epoll.modify(filenoo,select.EPOLLIN)
                             except:
                                 pass
-                    #print 'c'
+                    print 'c'
                 elif eventt & select.EPOLLPRI:
                     while True:
                         try:
@@ -335,9 +402,13 @@ class Thread(threading.Thread):
                             pass
 
             ##WHEN THE WAY IS HTTP:
-            elif linkway[filenoo] == "http":
+            elif linkway[filenoo] == "http" or False:
                 if eventt & select.EPOLLMSG:
-                    aa=connections[filenoo].recv(1024)
+                    #while True:
+                    try:
+                        aa=connections[filenoo].recv(1024)
+                    except:
+                        pass
                     httprequests[filenoo] += aa
                     if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo]:
                         #print('-'*40 + '\n' + httprequests[filenoo])
@@ -345,6 +416,7 @@ class Thread(threading.Thread):
                             httprespones[filenoo]=dealresponse(httprequests[filenoo])
                             epoll.modify(filenoo,select.EPOLLOUT)
                         except Exception,e:
+                            print "fopenerror"
                             logging.error(e)
                             httprespones[filenoo]=''
                     else:
@@ -358,7 +430,11 @@ class Thread(threading.Thread):
 
                 elif eventt & select.EPOLLPRI:
                     #print 'o'
-                    byteswritten[filenoo] = connections[filenoo].send(httprespones[filenoo])
+                    #while True:
+                    try:
+                        byteswritten[filenoo] = connections[filenoo].send(httprespones[filenoo])
+                    except:
+                        pass
                     httprespones[filenoo] = httprespones[filenoo][byteswritten[filenoo]:]
                     if len(httprespones[filenoo]) == 0:
                         try:
@@ -381,8 +457,9 @@ class Thread(threading.Thread):
 
 
 if __name__=="__main__":
+    readconf()
     queue=Queue.Queue()
-    for i in range(1):
+    for i in range(500):
         t=Thread(queue)
         t.setDaemon(True)
         t.start()
@@ -392,12 +469,12 @@ if __name__=="__main__":
     context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
     serversockets = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversockets.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    serversockets.bind(('127.0.0.1', 443))
+    serversockets.bind(('127.0.0.1', 4433))
     serversockets.listen(100)
     serversockets.setblocking(0)
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    serversocket.bind(('127.0.0.1', 80))
+    serversocket.bind(('127.0.0.1', 8080))
     serversocket.listen(100)
     serversocket.setblocking(0)
     epoll = select.epoll()
@@ -445,7 +522,7 @@ if __name__=="__main__":
                             connection.shutdown(socket.SHUT_RDWR)
                             connection.close()
                 elif event & select.EPOLLIN:
-                    #print 'b'
+                    print 'b'
                     epoll.modify(fileno,select.EPOLLMSG)
                     queue.put((fileno,select.EPOLLMSG))
                 elif event & select.EPOLLOUT:
