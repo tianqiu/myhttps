@@ -451,3 +451,6 @@ ERROR:root:The operation did not complete (read) (_ssl.c:1752)
 ERROR:root:The operation did not complete (read) (_ssl.c:1752)
 ERROR:root:The operation did not complete (read) (_ssl.c:1752)
 ERROR:root:The operation did not complete (read) (_ssl.c:1752)
+ERROR:root:local variable 'HTTPIP' referenced before assignment
+ERROR:root:local variable 'HTTPIP' referenced before assignment
+ERROR:root:local variable 'httpip' referenced before assignment

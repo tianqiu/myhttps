@@ -10,12 +10,71 @@ import logging
 EOL1=b'\n\n'
 EOL2=b'\n\r\n'
 cwd="/myhttps/www"
-logging.basicConfig(filename = os.path.join(os.getcwd(), 'log.txt'), level = logging.ERROR)
+LOG="/myhttps/log.txt"
+CERT="/myhttps/cert.pem"
+KEY="/myhttps/key.pem"
+HTTPIP="127.0.0.1"
+HTTPLISTEN=8080
+HTTPSIP="127.0.0.1"
+HTTPSLISTEN=4433
+logging.basicConfig(filename = os.path.join(os.getcwd(), LOG), level = logging.ERROR)
+
 def readconf():
+    global cwd,LOG,CERT,KEY,HTTPIP,HTTPLISTEN,HTTPSIP,HTTPSLISTEN
     try:
         f=open("myhttps.conf","r")
         conf=f.read()
         f.close()
+    except:
+        pass
+    try:
+        PATHconf=conf.split("PATH{")[-1]
+        PATHconf=PATHconf.split("}")[0]
+        PATHconf=PATHconf.split("\n")[1:-1]
+        for i in PATHconf:
+            name=i.split(":")[0]
+            path=i.split(":")[1]
+            if name == "CWD":
+                cwd=path
+            elif name == "LOG":
+                LOG=path
+            elif name == "CERT":
+                CERT=path
+            elif name == "KEY":
+                KEY=path
+    except Exception,e:
+        logging.error(e)
+    try:
+        HTTPconf=conf.split("HTTP{")[-1]
+        HTTPconf=HTTPconf.split("}")[0]
+        HTTPconf=HTTPconf.split("\n")[1:-1]
+        for i in HTTPconf:
+            name=i.split(":")[0]
+            path=i.split(":")[1]
+            if name == "IP":
+                HTTPIP=path
+            elif name == "LISTEN":
+                HTTPLISTEN=int(path)
+                print HTTPLISTEN
+    except Exception,e:
+        logging.error(e)
+
+    try:
+        HTTPSconf=conf.split("HTTPS{")[-1]
+        HTTPSconf=HTTPSconf.split("}")[0]
+        HTTPSconf=HTTPSconf.split("\n")[1:-1]
+        for i in HTTPSconf:
+            name=i.split(":")[0]
+            path=i.split(":")[1]
+            if name == "IP":
+                HTTPSIP=path
+            elif name == "LISTEN":
+                HTTPSLISTEN=int(path)
+
+    except:
+        pass
+
+    try:
         Rconf=conf.split("R{")[-1]
         Rconf=Rconf.split("}")[0]
         Rconf=Rconf.split("\n")[1:-1]
@@ -547,15 +606,16 @@ if __name__=="__main__":
     print "thread finished"
     startt=time.time()
     context=ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-    context.load_cert_chain(certfile='/myhttps/cert.pem', keyfile='/myhttps/key.pem')
+    context.load_cert_chain(certfile=CERT, keyfile=KEY)
     serversockets = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversockets.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    serversockets.bind(('127.0.0.1', 4433))
+    print HTTPSIP,HTTPSLISTEN,HTTPIP,HTTPLISTEN
+    serversockets.bind((HTTPSIP, HTTPSLISTEN))
     serversockets.listen(100)
     serversockets.setblocking(0)
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    serversocket.bind(('127.0.0.1', 8080))
+    serversocket.bind((HTTPIP, HTTPLISTEN))
     serversocket.listen(100)
     serversocket.setblocking(0)
     epoll = select.epoll()
