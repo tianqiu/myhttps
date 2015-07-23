@@ -55,7 +55,7 @@ def readconf():
                 HTTPIP=path
             elif name == "LISTEN":
                 HTTPLISTEN=int(path)
-                print HTTPLISTEN
+
     except Exception,e:
         logging.error(e)
 
@@ -502,7 +502,7 @@ class Thread(threading.Thread):
                                 epoll.modify(filenoo,select.EPOLLIN)
                             except:
                                 pass
-                    print 'c'
+                    #print 'c'
                 elif eventt & select.EPOLLPRI:
                     while True:
                         try:
@@ -604,19 +604,17 @@ if __name__=="__main__":
         t.setDaemon(True)
         t.start()
     print "thread finished"
-    startt=time.time()
     context=ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     context.load_cert_chain(certfile=CERT, keyfile=KEY)
     serversockets = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversockets.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    print HTTPSIP,HTTPSLISTEN,HTTPIP,HTTPLISTEN
     serversockets.bind((HTTPSIP, HTTPSLISTEN))
-    serversockets.listen(100)
+    serversockets.listen(20000)
     serversockets.setblocking(0)
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     serversocket.bind((HTTPIP, HTTPLISTEN))
-    serversocket.listen(100)
+    serversocket.listen(20000)
     serversocket.setblocking(0)
     epoll = select.epoll()
     epoll.register(serversockets.fileno(), select.EPOLLIN)
@@ -663,7 +661,7 @@ if __name__=="__main__":
                             connection.shutdown(socket.SHUT_RDWR)
                             connection.close()
                 elif event & select.EPOLLIN:
-                    print 'b'
+                    #print 'b'
                     epoll.modify(fileno,select.EPOLLMSG)
                     queue.put((fileno,select.EPOLLMSG))
                 elif event & select.EPOLLOUT:
