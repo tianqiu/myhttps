@@ -19,9 +19,9 @@ CERT="/myhttps/cert.pem"
 KEY="/myhttps/key.pem"
 STATUS="/myhttps/status/"
 HTTPIP="127.0.0.1"
-HTTPLISTEN=8080
+HTTPLISTEN=80
 HTTPSIP="127.0.0.1"
-HTTPSLISTEN=4433
+HTTPSLISTEN=443
 logging.basicConfig(filename = os.path.join(os.getcwd(), LOG), level = logging.ERROR)
 
 def readconf():
