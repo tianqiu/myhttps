@@ -134,8 +134,6 @@ def readconf():
             quan=i.split(":")[0]
             names=i.split(":")[1]
             names=names.split(" ")
-            print quan
-            print names
             if quan == "r":
                 S[4]=names
             elif quan == "w":
