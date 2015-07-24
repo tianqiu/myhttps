@@ -7,12 +7,17 @@ import select
 import urllib
 import time
 import logging
+R={}
+W={}
+X={}
+S={}
 EOL1=b'\n\n'
 EOL2=b'\n\r\n'
 cwd="/myhttps/www"
 LOG="/myhttps/log.txt"
 CERT="/myhttps/cert.pem"
 KEY="/myhttps/key.pem"
+STATUS="/myhttps/status/"
 HTTPIP="127.0.0.1"
 HTTPLISTEN=8080
 HTTPSIP="127.0.0.1"
@@ -20,7 +25,7 @@ HTTPSLISTEN=4433
 logging.basicConfig(filename = os.path.join(os.getcwd(), LOG), level = logging.ERROR)
 
 def readconf():
-    global cwd,LOG,CERT,KEY,HTTPIP,HTTPLISTEN,HTTPSIP,HTTPSLISTEN
+    global cwd,LOG,CERT,KEY,HTTPIP,HTTPLISTEN,HTTPSIP,HTTPSLISTEN,STATUS,R,W,X,S
     try:
         f=open("myhttps.conf","r")
         conf=f.read()
@@ -42,6 +47,8 @@ def readconf():
                 CERT=path
             elif name == "KEY":
                 KEY=path
+            elif name == "STATUS":
+                STATUS=path
     except Exception,e:
         logging.error(e)
     try:
@@ -96,18 +103,7 @@ def readconf():
             path=i.split(":")[0]
             types=i.split(":")[1]
             types=types.split(" ")
-            files=os.popen("ls "+cwd+path).read()
-            files=files.split("\n")[0:-1]
-            files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
-            for file in files:
-                try:
-                    os.system("chmod 000 "+cwd+path+"/"+file)
-                except:
-                    pass
-            for file in files:
-                type=file.split(".")[-1]
-                if type in types:
-                    os.system("chmod u+r "+cwd+path+"/"+file)
+            R[path]=types
         except:
             pass
     #W
@@ -116,38 +112,36 @@ def readconf():
             path=i.split(":")[0]
             types=i.split(":")[1]
             types=types.split(" ")
-            files=os.popen("ls "+cwd+path).read()
-            files=files.split("\n")[0:-1]
-            files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
-            for file in files:
-                type=file.split(".")[-1]
-                if type in types:
-                    os.system("chmod u+w "+cwd+path+"/"+file)
+            W[path]=types
         except:
             pass
-
     #X
     for i in Xconf:
         try:
             path=i.split(":")[0]
             types=i.split(":")[1]
             types=types.split(" ")
-            files=os.popen("ls "+cwd+path).read()
-            files=files.split("\n")[0:-1]
-            files=filter(lambda n:os.path.isdir(cwd+path+"/"+n) == False,files)
-            for file in files:
-                type=file.split(".")[-1]
-                if type in types:
-                    os.system("chmod u+x "+cwd+path+"/"+file)
+            X[path]=types
         except:
             pass
 
     #S
+    S[1]=[]
+    S[2]=[]
+    S[4]=[]
     for i in Sconf:
         try:
-            path=i.split(":")[0]
-            num=i.split(":")[1]
-            os.system("chmod "+num+" "+cwd+path)
+            quan=i.split(":")[0]
+            names=i.split(":")[1]
+            names=names.split(" ")
+            print quan
+            print names
+            if quan == "r":
+                S[4]=names
+            elif quan == "w":
+                S[2]=names
+            elif quan == "x":
+                S[1]=names
         except:
             pass
 
@@ -160,9 +154,9 @@ def deal200head(path):
     return head
 def deal400():
     try:
-        f=open(cwd+"/status/400.html","r")
+        f=open(STATUS+"400.html","r")
     except:
-        if os.path.exists(cwd+"/status/400.html"):
+        if os.path.exists(STATUS+"400.html"):
             return deal403()
         else:
             return deal404()
@@ -171,14 +165,14 @@ def deal400():
     head="HTTP/1.1 400 Bad Request\r\n"
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
-    head+="Content-Length:"+str(os.path.getsize(cwd+"/status/400.html"))+"\r\n"
+    head+="Content-Length:"+str(os.path.getsize(STATUS+"400.html"))+"\r\n"
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 def deal404():
     try:
-        f=open(cwd+"/status/404.html","r")
+        f=open(STATUS+"404.html","r")
     except:
-        if os.path.exists(cwd+"/status/404.html"):
+        if os.path.exists(STATUS+"404.html"):
             return deal403()
         else:
             return deal404()
@@ -187,14 +181,14 @@ def deal404():
     head="HTTP/1.1 404 Not Found\r\n"
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
-    head+="Content-Length:"+str(os.path.getsize(cwd+"/status/404.html"))+"\r\n"
+    head+="Content-Length:"+str(os.path.getsize(STATUS+"404.html"))+"\r\n"
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 def deal403():
     try:
-        f=open(cwd+"/status/403.html","r")
+        f=open(STATUS+"403.html","r")
     except:
-        if os.path.exists(cwd+"/status/403.html"):
+        if os.path.exists(STATUS+"403.html"):
             return deal403()
         else:
             return deal404()
@@ -203,14 +197,14 @@ def deal403():
     head="HTTP/1.1 403 Forbidden\r\n"
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
-    head+="Content-Length:"+str(os.path.getsize(cwd+"/status/403.html"))+"\r\n"
+    head+="Content-Length:"+str(os.path.getsize(STATUS+"403.html"))+"\r\n"
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 def deal405():
     try:
-        f=open(cwd+"/status/405.html","r")
+        f=open(STATUS+"405.html","r")
     except:
-        if os.path.exists(cwd+"/status/405.html"):
+        if os.path.exists(STATUS+"405.html"):
             return deal403()
         else:
             return deal404()
@@ -219,14 +213,14 @@ def deal405():
     head="HTTP/1.1 405 Method Not Allowed\r\n"
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
-    head+="Content-Length:"+str(os.path.getsize(cwd+"/status/405.html"))+"\r\n"
+    head+="Content-Length:"+str(os.path.getsize(STATUS+"405.html"))+"\r\n"
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 def deal501():
     try:
-        f=open(cwd+"/status/501.html","r")
+        f=open(STATUS+"501.html","r")
     except:
-        if os.path.exists(cwd+"/status/501.html"):
+        if os.path.exists(STATUS+"501.html"):
             return deal403()
         else:
             return deal404()
@@ -235,7 +229,7 @@ def deal501():
     head="HTTP/1.1 501 Not Implemented\r\n"
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
-    head+="Content-Length:"+str(os.path.getsize(cwd+"/status/501.html"))+"\r\n"
+    head+="Content-Length:"+str(os.path.getsize(STATUS+"501.html"))+"\r\n"
     head+="Content-Type: text/html\r\n\r\n"
     return head+ff
 
@@ -253,7 +247,12 @@ def dealdir(path,method="GET"):
 def dealnone(path,method="GET"):
     print "dead"
     try:
-        f=open(cwd+path,"r")
+        if path in S[4]:
+            f=open(cwd+path,"r")
+        elif "none" in R[os.path.dirname(path)]:
+            f=open(cwd+path,"r")
+        else:
+            return deal403()
     except:
         return deal403()
     ff=f.read()
@@ -268,7 +267,12 @@ def dealhtml(path,method="GET"):
     head=deal200head(path)
     head+="Content-Type: text/html\r\n\r\n"
     try:
-        f=open(cwd+path,"r")
+        if path in S[4]:
+            f=open(cwd+path,"r")
+        elif "html" in R[os.path.dirname(path)]:
+            f=open(cwd+path,"r")
+        else:
+            return deal403()
     except:
         return deal403()
     ff=f.read()
@@ -279,7 +283,12 @@ def dealhtml(path,method="GET"):
         return head+ff
 def dealphp(path,c,method="GET"):
     try:
-        ff.popen("php "+cwd+path+" "+c).read()
+        if path in S[4] and path in S[1]:
+            ff.popen("php "+cwd+path+" "+c).read()
+        elif "php" in R[os.path.dirname(path)] and "php" in X[os.path.dirname(path)]:
+            ff.popen("php "+cwd+path+" "+c).read()
+        else:
+            return deal403()
     except:
         return deal403()
     head=deal200head()
@@ -291,22 +300,42 @@ def dealphp(path,c,method="GET"):
 def dealcgi(path,types,cgican,method="GET"):
     if types == "py":
         try:
-            ff=os.popen("python "+cwd+path+" "+cgican).read()
+            if path in S[4] and path in S[1]:
+                ff=os.popen("python "+cwd+path+" "+cgican).read()
+            elif "py" in R[os.path.dirname(path)] and "py" in X[os.path.dirname(path)]:
+                ff=os.popen("python "+cwd+path+" "+cgican).read()
+            else:
+                return deal403()
         except:
             return deal403()
-    elif types == "pl" or "pm" or "perl":
+    elif types == "perl":
         try:
-            ff=os.popen("perl "+cwd+path+" "+cgican).read()
+            if path in S[4] and path in S[1]:
+                ff=os.popen("perl "+cwd+path+" "+cgican).read()
+            elif "perl" in R[os.path.dirname(path)] and "perl" in X[os.path.dirname(path)]:
+                ff=os.popen("perl "+cwd+path+" "+cgican).read()
+            else:
+                return deal403()
         except:
             return deal403()
     elif types == "php":
         try:
-            ff=os.popen("php "+cwd+path+" "+cgican).read()
+            if path in S[4] and path in S[1]:
+                ff=os.popen("php "+cwd+path+" "+cgican).read()
+            elif "php" in R[os.path.dirname(path)] and "php" in X[os.path.dirname(path)]:
+                ff=os.popen("php "+cwd+path+" "+cgican).read()
+            else:
+                return deal403()
         except:
             return deal403()
     else:
         try:
-            ff=os.popen("."+cwd+path+" "+cgican).read()
+            if path in S[4] and path in S[1]:
+                ff=os.popen("."+cwd+path+" "+cgican).read()
+            elif types in R[os.path.dirname(path)] and types in X[os.path.dirname(path)]:
+                ff=os.popen("."+cwd+path+" "+cgican).read()
+            else:
+                return deal403()
         except Exception,e:
             logging.error(e)
             f=open(cwd+path,"r")
@@ -333,7 +362,12 @@ def dealresponse(request):
         return deal501()
     if url == '/':
         try:
-            f=open(cwd+"/index.html")
+            if "/index.html" in S[4]:
+                f=open(cwd+"/index.html")
+            elif "html" in R["/"]:
+                f=open(cwd+"/index.html")
+            else:
+                return deal403()
         except:
             return deal403()
         ff=f.read()
@@ -375,7 +409,12 @@ def dealresponse(request):
                     return dealphp(path,c,method)
                 else:
                     try:
-                        f=open(cwd+path,"r")
+                        if path in S[4]:
+                            f=open(cwd+path,"r")
+                        elif types in R[os.path.dirname(path)]:
+                            f=open(cwd+path,"r")
+                        else:
+                            return deal403()
                     except:
                         return deal403()
                     ff=f.read()
@@ -418,7 +457,12 @@ def dealresponse(request):
                     return dealphp(path,c)
                 else:
                     try:
-                        f=open(cwd+path,"r")
+                        if path in S[4]:
+                            f=open(cwd+path,"r")
+                        elif types in R[os.path.dirname(path)]:
+                            f=open(cwd+path,"r")
+                        else:
+                            return deal403()
                     except:
                         return deal403()
                     ff=f.read()
@@ -432,9 +476,20 @@ def dealresponse(request):
         if os.path.exists(cwd+path):
             try:
                 if os.path.isdir(cwd+path):
-                    os.system("rm -Rf "+cwd+path)
+                    #os.system("rm -Rf "+cwd+path)
+                    return deal403()
                 else:
-                    os.system("rm -f "+cwd+path)
+                    filename=path.split('/')[-1]
+                    if len(filename.split('.'))>1:
+                        types=filename.split('.')[-1]
+                    else:
+                        types="none"
+                    if path in S[2]:
+                        os.system("rm -f "+cwd+path)
+                    elif types in R[os.path.dirname(path)]:
+                        os.system("rm -f "+cwd+path)
+                    else:
+                        return deal403()
             except Exception,e:
                 logging.error(e)
                 return deal405()
@@ -599,7 +654,7 @@ class Thread(threading.Thread):
 if __name__=="__main__":
     readconf()
     queue=Queue.Queue()
-    for i in range(500):
+    for i in range(100):
         t=Thread(queue)
         t.setDaemon(True)
         t.start()
