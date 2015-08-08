@@ -7,18 +7,17 @@ import select
 import urllib
 import time
 import logging
-import sys
 R={}
 W={}
 X={}
 S={}
 EOL1=b'\n\n'
 EOL2=b'\n\r\n'
-cwd="/home/qiutian/myhttps/www"
-LOG="/home/qiutian/myhttps/log.txt"
-CERT="/home/qiutian/myhttps/cert.pem"
-KEY="/home/qiutian/myhttps/key.pem"
-STATUS="/home/qiutian/myhttps/status/"
+cwd="/myhttps/www"
+LOG="/myhttps/log.txt"
+CERT="/myhttps/cert.pem"
+KEY="/myhttps/key.pem"
+STATUS="/myhttps/status/"
 HTTPIP="127.0.0.1"
 HTTPLISTEN=80
 HTTPSIP="127.0.0.1"
@@ -274,7 +273,6 @@ def dealhtml(path,method="GET"):
             return deal403()
     except:
         return deal403()
-    print "\nhtml\n"
     ff=f.read()
     f.close()
     if method == "HEAD":
@@ -393,6 +391,7 @@ def dealresponse(request):
                     while i<len(a):
                         c=c+' '+a[i]
                         i=i+1
+
                 filename=path.split('/')[-1]
                 if len(filename.split('.'))>1:
                     types=filename.split('.')[-1]
@@ -605,7 +604,7 @@ class Thread(threading.Thread):
                         pass
                     httprequests[filenoo] += aa
                     if EOL1 in httprequests[filenoo] or EOL2 in httprequests[filenoo]:
-                        print('-'*40 + '\n' + httprequests[filenoo])
+                        #print('-'*40 + '\n' + httprequests[filenoo])
                         try:
                             httprespones[filenoo]=dealresponse(httprequests[filenoo])
                             epoll.modify(filenoo,select.EPOLLOUT)
@@ -651,7 +650,6 @@ class Thread(threading.Thread):
 
 
 if __name__=="__main__":
-    #sys.setrecursionlimit(100000)
     readconf()
     queue=Queue.Queue()
     for i in range(100):

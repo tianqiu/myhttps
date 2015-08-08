@@ -1,0 +1,142 @@
+ERROR:root:8
+ERROR:root:8
+ERROR:root:8
+ERROR:root:8
+ERROR:root:8
+ERROR:root:8
+ERROR:root:9
+ERROR:root:9
+ERROR:root:8
+ERROR:root:8
+ERROR:root:8
+ERROR:root:8
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:16
+ERROR:root:16
+ERROR:root:16
+ERROR:root:16
+ERROR:root:16
+ERROR:root:16
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:17
+ERROR:root:17
+ERROR:root:17
+ERROR:root:17
+ERROR:root:17
+ERROR:root:17
+ERROR:root:17
+ERROR:root:17
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:18
+ERROR:root:18
+ERROR:root:18
+ERROR:root:18
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:21
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:23
+ERROR:root:23
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:24
+ERROR:root:24
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:28
+ERROR:root:28
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:30
+ERROR:root:30
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:8
+ERROR:root:8
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:7
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:maximum recursion depth exceeded
+ERROR:root:8
+ERROR:root:8
+ERROR:root:maximum recursion depth exceeded
