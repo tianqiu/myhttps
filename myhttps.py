@@ -171,6 +171,7 @@ def deal404():
     try:
         f=open(STATUS+"404.html","r")
     except:
+        print STATUS+"404.html"
         if os.path.exists(STATUS+"404.html"):
             return deal403()
         else:
@@ -274,7 +275,6 @@ def dealhtml(path,method="GET"):
             return deal403()
     except:
         return deal403()
-    print "\nhtml\n"
     ff=f.read()
     f.close()
     if method == "HEAD":
@@ -651,7 +651,6 @@ class Thread(threading.Thread):
 
 
 if __name__=="__main__":
-    #sys.setrecursionlimit(100000)
     readconf()
     queue=Queue.Queue()
     for i in range(100):
