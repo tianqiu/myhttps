@@ -234,7 +234,7 @@ def deal501():
     return head+ff
 
 def dealdir(path,method="GET"):
-    ff=os.popen("python "+cwd+"/dealdir.py "+cwd+' '+path).read()
+    ff=os.popen("python " +"dealdir.py "+cwd+' '+path).read()
     head="HTTP/1.1 200 OK\r\n"
     head+="Date:"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) +"\r\n"
     head+="Server:server of qiutian\r\n"
