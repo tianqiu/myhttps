@@ -23,7 +23,6 @@ HTTPIP="127.0.0.1"
 HTTPLISTEN=80
 HTTPSIP="127.0.0.1"
 HTTPSLISTEN=443
-logging.basicConfig(filename = os.path.join(os.getcwd(), LOG), level = logging.ERROR)
 
 def readconf():
     global cwd,LOG,CERT,KEY,HTTPIP,HTTPLISTEN,HTTPSIP,HTTPSLISTEN,STATUS,R,W,X,S
@@ -652,6 +651,7 @@ class Thread(threading.Thread):
 
 if __name__=="__main__":
     readconf()
+    logging.basicConfig(filename = os.path.join(os.getcwd(), LOG), level = logging.ERROR)
     queue=Queue.Queue()
     for i in range(100):
         t=Thread(queue)
